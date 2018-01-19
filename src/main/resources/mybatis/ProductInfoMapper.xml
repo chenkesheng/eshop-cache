@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.roncoo.eshop.cache.mapper.ProductInfoMapper">
+
+    <select id="findById" resultType="com.roncoo.eshop.cache.model.ProductInfo"
+            parameterType="java.lang.Long">
+        SELECT id,`name`,price,picture_list AS pictureList,
+        specification,service,color,`size`,shop_id AS shopId
+        FROM product_info
+        WHERE
+        id = #{id}
+    </select>
+
+</mapper>
