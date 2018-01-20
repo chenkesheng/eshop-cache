@@ -67,7 +67,7 @@ public class KafkaMessageProcessor implements Runnable {
         // 调用商品信息服务的接口
         // 直接用注释模拟：getProductInfo?productId=1，传递过去
         // 商品信息服务，一般来说就会去查询数据库，去获取productId=1的商品信息，然后返回回来
-        String productInfoJSON = "{\"id\": 2, \"name\": \"iphone7手机\", \"price\": 5599, \"pictureList\":\"a.jpg,b.jpg\", \"specification\": \"iphone7的规格\", \"service\": \"iphone7的售后服务\", \"color\": \"红色,白色,黑色\", \"size\": \"5.5\", \"shopId\": 1,\"update_time\": \"2018-1-20 15:03:03\"}";
+        String productInfoJSON = "{\"id\": 7, \"name\": \"iphone7手机\", \"price\": 5599, \"pictureList\":\"a.jpg,b.jpg\", \"specification\": \"iphone7的规格\", \"service\": \"iphone7的售后服务\", \"color\": \"红色,白色,黑色\", \"size\": \"5.5\", \"shopId\": 1,\"updateTime\": \"2018-1-20 15:03:08\"}";
         ProductInfo productInfo = JSONObject.parseObject(productInfoJSON, ProductInfo.class);
 
         //在更新redis数据之前先进行获取分布式锁
@@ -76,28 +76,34 @@ public class KafkaMessageProcessor implements Runnable {
 
         //已经获取到了锁
         //从redis中获取数据
-        ProductInfo exitedProductInfo = cacheService.getProductInfoFromRedisCache(productId);
-        if (null != exitedProductInfo) {
+        ProductInfo existedProductInfo = cacheService.getProductInfoFromRedisCache(productId);
+        if (null != existedProductInfo) {
             try {
                 Date date = sdf.parse(productInfo.getUpdateTime());
-                Date exitedDate = sdf.parse(exitedProductInfo.getUpdateTime());
-                if (date.before(exitedDate)) {
-                    System.out.println("要更新的数据时间在redis中已经存在的数据时间之前" + productInfo.getUpdateTime() + "所以不需要更新");
+                Date existedDate = sdf.parse(existedProductInfo.getUpdateTime());
+
+                if(date.before(existedDate)) {
+                    System.out.println("current date[" + productInfo.getUpdateTime() + "] is before existed date[" + existedProductInfo.getUpdateTime() + "]");
                     return;
                 }
-            } catch (ParseException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
+            System.out.println("current date[" + productInfo.getUpdateTime() + "] is after existed date[" + existedProductInfo.getUpdateTime() + "]");
+        } else {
+            System.out.println("existed product info is null......");
         }
-        System.out.println("exited product info is null or update time after exitedDate");
+
         try {
-            Thread.sleep(60 * 1000);
+            Thread.sleep(10 * 1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
         cacheService.saveProductInfo2LocalCache(productInfo);
         System.out.println("===================获取刚保存到本地缓存的商品信息：" + cacheService.getProductInfoFromLocalCache(productId));
         cacheService.saveProductInfo2RedisCache(productInfo);
+
         //释放zk分布式锁
         zookeeperSession.releaseDistributedLock(productId);
     }

@@ -32,14 +32,15 @@ public class RebuildCacheQueue {
     }
 
     private static class Singleton {
+
         private static RebuildCacheQueue instance;
 
         static {
-            instance = Singleton.instance;
+            instance = new RebuildCacheQueue();
         }
 
         public static RebuildCacheQueue getInstance() {
-            return Singleton.instance;
+            return instance;
         }
     }
 

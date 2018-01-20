@@ -19,34 +19,35 @@ public class RebuildCacheThread implements Runnable {
 
     private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    RebuildCacheQueue queue = RebuildCacheQueue.getInstance();
-
-    ZookeeperSession zkSession = ZookeeperSession.getInstance();
-
-    CacheService cacheService = (CacheService) SpringContext.getApplicationContext().getBean("cacheService");
-
     @Override
     public void run() {
+        RebuildCacheQueue queue = RebuildCacheQueue.getInstance();
+
+        ZookeeperSession zkSession = ZookeeperSession.getInstance();
+
+        CacheService cacheService = (CacheService) SpringContext.getApplicationContext().getBean("cacheService");
         while (true) {
             ProductInfo productInfo = queue.takeQueue();
             //获取分布式锁
             zkSession.acquireDistributedLock(productInfo.getId());
             //已经获取到了锁
             //从redis中获取数据
-            ProductInfo exitedProductInfo = cacheService.getProductInfoFromRedisCache(productInfo.getId());
-            if (null != exitedProductInfo) {
+            ProductInfo existedProductInfo = cacheService.getProductInfoFromRedisCache(productInfo.getId());
+            if (null != existedProductInfo) {
                 try {
                     Date date = sdf.parse(productInfo.getUpdateTime());
-                    Date exitedDate = sdf.parse(exitedProductInfo.getUpdateTime());
+                    Date exitedDate = sdf.parse(existedProductInfo.getUpdateTime());
                     if (date.before(exitedDate)) {
-                        System.out.println("要更新的数据时间在redis中已经存在的数据时间之前" + productInfo.getUpdateTime() + "所以不需要更新");
+                        System.out.println("current date[" + productInfo.getUpdateTime() + "] is before existed date[" + existedProductInfo.getUpdateTime() + "]");
                         continue;
                     }
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
+                System.out.println("current date[" + productInfo.getUpdateTime() + "] is after existed date[" + existedProductInfo.getUpdateTime() + "]");
+            }else {
+                System.out.println("existed product info is null......");
             }
-            System.out.println("exited product info is null or update time after exitedDate");
             cacheService.saveProductInfo2LocalCache(productInfo);
             cacheService.saveProductInfo2RedisCache(productInfo);
             //释放zk分布式锁
