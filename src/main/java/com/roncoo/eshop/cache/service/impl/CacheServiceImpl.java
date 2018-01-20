@@ -118,7 +118,10 @@ public class CacheServiceImpl implements CacheService {
     public ProductInfo getProductInfoFromRedisCache(Long productId) {
         String key = "product_info_" + productId;
         String json = jedisCluster.get(key);
-        return JSONObject.parseObject(json, ProductInfo.class);
+        if (null != json) {
+            return JSONObject.parseObject(json, ProductInfo.class);
+        }
+        return null;
     }
 
     /**
@@ -127,23 +130,26 @@ public class CacheServiceImpl implements CacheService {
     public ShopInfo getShopInfoFromRedisCache(Long shopId) {
         String key = "shop_info_" + shopId;
         String json = jedisCluster.get(key);
-        return JSONObject.parseObject(json, ShopInfo.class);
+        if (null != json) {
+            return JSONObject.parseObject(json, ShopInfo.class);
+        }
+        return null;
     }
 
     @Override
     public ProductInfo findByProductId(Long productId) {
         String key = "product_info_" + productId;
         ProductInfo productInfo = productInfoMapper.findById(productId);
-        jedisCluster.set(key, JSONObject.toJSONString(productInfo));
+//        jedisCluster.set(key, JSONObject.toJSONString(productInfo));
         return productInfo;
     }
 
     @Override
-    @Cacheable(value = CACHE_NAME, key = "'shop_info_'+#shopId")
+//    @Cacheable(value = CACHE_NAME, key = "'shop_info_'+#shopId")
     public ShopInfo finByShopId(Long id) {
         String key = "shop_info_" + id;
         ShopInfo shopInfo = shopInfoMapper.findById(id);
-        jedisCluster.set(key, JSONObject.toJSONString(shopInfo));
+//        jedisCluster.set(key, JSONObject.toJSONString(shopInfo));
         return shopInfo;
     }
 

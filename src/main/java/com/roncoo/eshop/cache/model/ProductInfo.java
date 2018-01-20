@@ -17,6 +17,7 @@ public class ProductInfo {
     private String color;
     private String size;
     private Long shopId;
+    private String updateTime;
 
     public ProductInfo() {
 
@@ -94,12 +95,27 @@ public class ProductInfo {
         this.shopId = shopId;
     }
 
-    @Override
-    public String toString() {
-        return "ProductInfo [id=" + id + ", name=" + name + ", price=" + price
-                + ", pictureList=" + pictureList + ", specification="
-                + specification + ", service=" + service + ", color=" + color
-                + ", size=" + size + ", shopId=" + shopId + "]";
+    public String getUpdateTime() {
+        return updateTime;
     }
 
+    public void setUpdateTime(String updateTime) {
+        this.updateTime = updateTime;
+    }
+
+    @Override
+    public String toString() {
+        return "ProductInfo{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", price=" + price +
+                ", pictureList='" + pictureList + '\'' +
+                ", specification='" + specification + '\'' +
+                ", service='" + service + '\'' +
+                ", color='" + color + '\'' +
+                ", size='" + size + '\'' +
+                ", shopId=" + shopId +
+                ", updateTime='" + updateTime + '\'' +
+                '}';
+    }
 }

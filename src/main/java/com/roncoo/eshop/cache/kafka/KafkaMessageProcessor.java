@@ -6,8 +6,13 @@ import com.roncoo.eshop.cache.model.ShopInfo;
 import com.roncoo.eshop.cache.service.CacheService;
 import com.roncoo.eshop.cache.spring.SpringContext;
 
+import com.roncoo.eshop.cache.zk.ZookeeperSession;
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * @Author: cks
@@ -17,6 +22,8 @@ import kafka.consumer.KafkaStream;
  */
 @SuppressWarnings("rawtypes")
 public class KafkaMessageProcessor implements Runnable {
+
+    private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     private KafkaStream kafkaStream;
     private CacheService cacheService;
@@ -60,11 +67,39 @@ public class KafkaMessageProcessor implements Runnable {
         // 调用商品信息服务的接口
         // 直接用注释模拟：getProductInfo?productId=1，传递过去
         // 商品信息服务，一般来说就会去查询数据库，去获取productId=1的商品信息，然后返回回来
-        String productInfoJSON = "{\"id\": 1, \"name\": \"iphone7手机\", \"price\": 5599, \"pictureList\":\"a.jpg,b.jpg\", \"specification\": \"iphone7的规格\", \"service\": \"iphone7的售后服务\", \"color\": \"红色,白色,黑色\", \"size\": \"5.5\", \"shopId\": 1}";
+        String productInfoJSON = "{\"id\": 2, \"name\": \"iphone7手机\", \"price\": 5599, \"pictureList\":\"a.jpg,b.jpg\", \"specification\": \"iphone7的规格\", \"service\": \"iphone7的售后服务\", \"color\": \"红色,白色,黑色\", \"size\": \"5.5\", \"shopId\": 1,\"update_time\": \"2018-1-20 15:03:03\"}";
         ProductInfo productInfo = JSONObject.parseObject(productInfoJSON, ProductInfo.class);
+
+        //在更新redis数据之前先进行获取分布式锁
+        ZookeeperSession zookeeperSession = ZookeeperSession.getInstance();
+        zookeeperSession.acquireDistributedLock(productId);
+
+        //已经获取到了锁
+        //从redis中获取数据
+        ProductInfo exitedProductInfo = cacheService.getProductInfoFromRedisCache(productId);
+        if (null != exitedProductInfo) {
+            try {
+                Date date = sdf.parse(productInfo.getUpdateTime());
+                Date exitedDate = sdf.parse(exitedProductInfo.getUpdateTime());
+                if (date.before(exitedDate)) {
+                    System.out.println("要更新的数据时间在redis中已经存在的数据时间之前" + productInfo.getUpdateTime() + "所以不需要更新");
+                    return;
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("exited product info is null or update time after exitedDate");
+        try {
+            Thread.sleep(60 * 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         cacheService.saveProductInfo2LocalCache(productInfo);
         System.out.println("===================获取刚保存到本地缓存的商品信息：" + cacheService.getProductInfoFromLocalCache(productId));
         cacheService.saveProductInfo2RedisCache(productInfo);
+        //释放zk分布式锁
+        zookeeperSession.releaseDistributedLock(productId);
     }
 
     /**

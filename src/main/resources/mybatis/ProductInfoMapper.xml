@@ -6,7 +6,7 @@
     <select id="findById" resultType="com.roncoo.eshop.cache.model.ProductInfo"
             parameterType="java.lang.Long">
         SELECT id,`name`,price,picture_list AS pictureList,
-        specification,service,color,`size`,shop_id AS shopId
+        specification,service,color,`size`,shop_id AS shopId,update_time AS updateTime
         FROM product_info
         WHERE
         id = #{id}

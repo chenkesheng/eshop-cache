@@ -2,6 +2,7 @@ package com.roncoo.eshop.cache.controller;
 
 import javax.annotation.Resource;
 
+import com.roncoo.eshop.cache.rebuild.RebuildCacheQueue;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -51,6 +52,10 @@ public class CacheController {
         if (productInfo == null) {
             // 就需要从数据源重新拉去数据，重建缓存
             productInfo = cacheService.findByProductId(productId);
+            //将数据推到内存队列中去重构缓存
+            RebuildCacheQueue rebuildCacheQueue = RebuildCacheQueue.getInstance();
+            rebuildCacheQueue.putQueue(productInfo);
+
         }
 
         return productInfo;

@@ -29,7 +29,7 @@ public class KafkaConsumer implements Runnable {
 
     @SuppressWarnings("rawtypes")
     public void run() {
-        Map<String, Integer> topicCountMap = new HashMap<String, Integer>();
+        Map<String, Integer> topicCountMap = new HashMap<>();
         topicCountMap.put(topic, 1);
 
         Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap =

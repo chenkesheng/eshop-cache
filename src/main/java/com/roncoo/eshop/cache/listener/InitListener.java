@@ -4,6 +4,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import com.roncoo.eshop.cache.rebuild.RebuildCacheThread;
+import com.roncoo.eshop.cache.zk.ZookeeperSession;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -24,6 +26,12 @@ public class InitListener implements ServletContextListener {
         SpringContext.setApplicationContext(context);
 
         new Thread(new KafkaConsumer("cache-message")).start();
+
+        new  Thread(new RebuildCacheThread()).start();
+        //zk分布式锁进行初始化
+        ZookeeperSession.init();
+
+
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
