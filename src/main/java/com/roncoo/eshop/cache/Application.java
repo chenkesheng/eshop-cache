@@ -1,5 +1,6 @@
 package com.roncoo.eshop.cache;
 
+import com.roncoo.eshop.cache.listener.InitListener;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.mybatis.spring.SqlSessionFactoryBean;
@@ -8,6 +9,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -55,14 +57,14 @@ public class Application {
         return jedisCluster;
     }
 
-//    @SuppressWarnings({ "rawtypes", "unchecked" })
-//	@Bean
-//    public ServletListenerRegistrationBean servletListenerRegistrationBean() {
-//    	ServletListenerRegistrationBean servletListenerRegistrationBean =
-//    			new ServletListenerRegistrationBean();
-//    	servletListenerRegistrationBean.setListener(new InitListener());
-//    	return servletListenerRegistrationBean;
-//    }
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	@Bean
+    public ServletListenerRegistrationBean servletListenerRegistrationBean() {
+    	ServletListenerRegistrationBean servletListenerRegistrationBean =
+    			new ServletListenerRegistrationBean();
+    	servletListenerRegistrationBean.setListener(new InitListener());
+    	return servletListenerRegistrationBean;
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
