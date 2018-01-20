@@ -65,10 +65,10 @@ public class ZookeeperSession {
             int count = 0;
             while (true) {
                 try {
-                    Thread.sleep(300);
+                    Thread.sleep(20);
                     zooKeeper.create(path, "".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
                 } catch (Exception e1) {
-                    e1.printStackTrace();
+//                    e1.printStackTrace();
                     count++;
                     System.out.println("the" + count + "times try to acquire lock for product id = " + productId);
                     continue;
