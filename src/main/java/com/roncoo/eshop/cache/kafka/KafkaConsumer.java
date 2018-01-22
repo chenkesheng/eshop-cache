@@ -42,7 +42,7 @@ public class KafkaConsumer implements Runnable {
     }
 
     /**
-     * 创建kafka cosumer config
+     * 创建kafka consumer config
      *
      * @return
      */
