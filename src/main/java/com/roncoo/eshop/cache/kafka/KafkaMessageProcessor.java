@@ -67,7 +67,7 @@ public class KafkaMessageProcessor implements Runnable {
         // 调用商品信息服务的接口
         // 直接用注释模拟：getProductInfo?productId=1，传递过去
         // 商品信息服务，一般来说就会去查询数据库，去获取productId=1的商品信息，然后返回回来
-        String productInfoJSON = "{\"id\": 7, \"name\": \"iphone7手机\", \"price\": 5599, \"pictureList\":\"a.jpg,b.jpg\", \"specification\": \"iphone7的规格\", \"service\": \"iphone7的售后服务\", \"color\": \"红色,白色,黑色\", \"size\": \"5.5\", \"shopId\": 1,\"updateTime\": \"2018-1-20 15:03:08\"}";
+        String productInfoJSON = "{\"id\": 8, \"name\": \"iphone7手机\", \"price\": 5599, \"pictureList\":\"a.jpg,b.jpg\", \"specification\": \"iphone7的规格\", \"service\": \"iphone7的售后服务\", \"color\": \"红色,白色,黑色\", \"size\": \"5.5\", \"shopId\": 1,\"updateTime\": \"2018-1-20 15:03:08\"}";
         ProductInfo productInfo = JSONObject.parseObject(productInfoJSON, ProductInfo.class);
 
         //在更新redis数据之前先进行获取分布式锁

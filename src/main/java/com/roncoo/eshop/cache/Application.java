@@ -50,8 +50,8 @@ public class Application {
     @Bean
     public JedisCluster JedisClusterFactory() {
         Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
+        jedisClusterNodes.add(new HostAndPort("192.168.30.100", 7001));
         jedisClusterNodes.add(new HostAndPort("192.168.30.102", 7003));
-        jedisClusterNodes.add(new HostAndPort("192.168.30.102", 7004));
         jedisClusterNodes.add(new HostAndPort("192.168.30.103", 7005));
         JedisCluster jedisCluster = new JedisCluster(jedisClusterNodes);
         return jedisCluster;

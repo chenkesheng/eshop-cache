@@ -3,6 +3,7 @@ package com.roncoo.eshop.cache.controller;
 import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
+import com.roncoo.eshop.cache.prewarm.CachePreWarmThread;
 import com.roncoo.eshop.cache.rebuild.RebuildCacheQueue;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,20 +41,24 @@ public class CacheController {
     @RequestMapping("/getProductInfo")
     @ResponseBody
     public ProductInfo getProductInfo(Long productId) {
-        ProductInfo productInfo = null;
+        ProductInfo productInfo;
 
         productInfo = cacheService.getProductInfoFromRedisCache(productId);
-        System.out.println("=================从redis中获取缓存，商品信息=" + productInfo);
+        if(productInfo != null){
+            System.out.println("=================从redis中获取缓存，商品信息=" + productInfo);
+        }
 
         if (productInfo == null) {
             productInfo = cacheService.getProductInfoFromLocalCache(productId);
-            System.out.println("=================从ehcache中获取缓存，商品信息=" + productInfo);
+            if(productInfo != null){
+                System.out.println("=================从ehcache中获取缓存，商品信息=" + productInfo);
+            }
         }
 
         if (productInfo == null) {
             // 就需要从数据源重新拉去数据，重建缓存
 //            productInfo = cacheService.findByProductId(productId);
-            String productInfoJSON = "{\"id\": 7, \"name\": \"iphone7手机\", \"price\": 5599, \"pictureList\":\"a.jpg,b.jpg\", \"specification\": \"iphone7的规格\", \"service\": \"iphone7的售后服务\", \"color\": \"红色,白色,黑色\", \"size\": \"5.5\", \"shopId\": 1,\"updateTime\": \"2018-1-20 15:03:13\"}";
+            String productInfoJSON = "{\"id\": "+productId+", \"name\": \"iphone7手机\", \"price\": 5599, \"pictureList\":\"a.jpg,b.jpg\", \"specification\": \"iphone7的规格\", \"service\": \"iphone7的售后服务\", \"color\": \"红色,白色,黑色\", \"size\": \"5.5\", \"shopId\": 1,\"updateTime\": \"2018-1-20 15:03:13\"}";
             productInfo=JSON.parseObject(productInfoJSON,ProductInfo.class);
             //将数据推到内存队列中去重构缓存
             RebuildCacheQueue rebuildCacheQueue = RebuildCacheQueue.getInstance();
@@ -83,6 +88,12 @@ public class CacheController {
         }
 
         return shopInfo;
+    }
+
+    @RequestMapping("/preWarmCache")
+    @ResponseBody
+    public void preWarmCache() {
+        new CachePreWarmThread().start();
     }
 
 }
