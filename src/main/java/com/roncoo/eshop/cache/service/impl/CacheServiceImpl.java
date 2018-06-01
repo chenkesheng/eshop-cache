@@ -2,6 +2,10 @@ package com.roncoo.eshop.cache.service.impl;
 
 import javax.annotation.Resource;
 
+import com.roncoo.eshop.cache.hystrix.GetProductInfoFromRedisCacheCommand;
+import com.roncoo.eshop.cache.hystrix.GetShopInfoFromRedisCacheCommand;
+import com.roncoo.eshop.cache.hystrix.SaveProductInfo2RedisCacheCommand;
+import com.roncoo.eshop.cache.hystrix.SaveShopInfo2RedisCacheCommand;
 import com.roncoo.eshop.cache.mapper.ProductInfoMapper;
 import com.roncoo.eshop.cache.mapper.ShopInfoMapper;
 import org.springframework.cache.annotation.CachePut;
@@ -10,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import redis.clients.jedis.JedisCluster;
 
-import com.alibaba.fastjson.JSONObject;
 import com.roncoo.eshop.cache.model.ProductInfo;
 import com.roncoo.eshop.cache.model.ShopInfo;
 import com.roncoo.eshop.cache.service.CacheService;
@@ -100,40 +103,47 @@ public class CacheServiceImpl implements CacheService {
      * @param productInfo
      */
     public void saveProductInfo2RedisCache(ProductInfo productInfo) {
-        String key = "product_info_" + productInfo.getId();
-        jedisCluster.set(key, JSONObject.toJSONString(productInfo));
+//        String key = "product_info_" + productInfo.getId();
+//        jedisCluster.set(key, JSONObject.toJSONString(productInfo));
+        //给redis集成hystrix 进行资源隔离，降级等处理
+        SaveProductInfo2RedisCacheCommand command = new SaveProductInfo2RedisCacheCommand(productInfo);
+        command.execute();
     }
 
     /**
      * 将店铺信息保存到redis中
      */
     public void saveShopInfo2RedisCache(ShopInfo shopInfo) {
-        String key = "shop_info_" + shopInfo.getId();
-        jedisCluster.set(key, JSONObject.toJSONString(shopInfo));
+//        String key = "shop_info_" + shopInfo.getId();
+//        jedisCluster.set(key, JSONObject.toJSONString(shopInfo));
+        SaveShopInfo2RedisCacheCommand cacheCommand = new SaveShopInfo2RedisCacheCommand(shopInfo);
+        cacheCommand.execute();
     }
 
     /**
      * 从redis中获取商品信息
      */
     public ProductInfo getProductInfoFromRedisCache(Long productId) {
-        String key = "product_info_" + productId;
-        String json = jedisCluster.get(key);
-        if (null != json) {
-            return JSONObject.parseObject(json, ProductInfo.class);
-        }
-        return null;
+//        String key = "product_info_" + productId;
+//        String json = jedisCluster.get(key);
+//        if (null != json) {
+//            return JSONObject.parseObject(json, ProductInfo.class);
+//        }
+        GetProductInfoFromRedisCacheCommand cacheCommand = new GetProductInfoFromRedisCacheCommand(productId);
+        return cacheCommand.execute();
     }
 
     /**
      * 从redis中获取店铺信息
      */
     public ShopInfo getShopInfoFromRedisCache(Long shopId) {
-        String key = "shop_info_" + shopId;
-        String json = jedisCluster.get(key);
-        if (null != json) {
-            return JSONObject.parseObject(json, ShopInfo.class);
-        }
-        return null;
+//        String key = "shop_info_" + shopId;
+//        String json = jedisCluster.get(key);
+//        if (null != json) {
+//            return JSONObject.parseObject(json, ShopInfo.class);
+//        }
+        GetShopInfoFromRedisCacheCommand command = new GetShopInfoFromRedisCacheCommand(shopId);
+        return command.execute();
     }
 
     @Override

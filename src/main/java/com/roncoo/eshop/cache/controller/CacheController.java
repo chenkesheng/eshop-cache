@@ -3,6 +3,7 @@ package com.roncoo.eshop.cache.controller;
 import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
+import com.roncoo.eshop.cache.hystrix.GetProductInfoCommand;
 import com.roncoo.eshop.cache.prewarm.CachePreWarmThread;
 import com.roncoo.eshop.cache.rebuild.RebuildCacheQueue;
 import org.springframework.stereotype.Controller;
@@ -58,8 +59,11 @@ public class CacheController {
         if (productInfo == null) {
             // 就需要从数据源重新拉去数据，重建缓存
 //            productInfo = cacheService.findByProductId(productId);
-            String productInfoJSON = "{\"id\": "+productId+", \"name\": \"iphone7手机\", \"price\": 5599, \"pictureList\":\"a.jpg,b.jpg\", \"specification\": \"iphone7的规格\", \"service\": \"iphone7的售后服务\", \"color\": \"红色,白色,黑色\", \"size\": \"5.5\", \"shopId\": 1,\"updateTime\": \"2018-1-20 15:03:13\"}";
-            productInfo=JSON.parseObject(productInfoJSON,ProductInfo.class);
+//            String productInfoJSON = "{\"id\": "+productId+", \"name\": \"iphone7手机\", \"price\": 5599, \"pictureList\":\"a.jpg,b.jpg\", \"specification\": \"iphone7的规格\", \"service\": \"iphone7的售后服务\", \"color\": \"红色,白色,黑色\", \"size\": \"5.5\", \"shopId\": 1,\"updateTime\": \"2018-1-20 15:03:13\"}";
+//            productInfo=JSON.parseObject(productInfoJSON,ProductInfo.class);
+
+            GetProductInfoCommand command = new GetProductInfoCommand(productId);
+            productInfo = command.execute();
             //将数据推到内存队列中去重构缓存
             RebuildCacheQueue rebuildCacheQueue = RebuildCacheQueue.getInstance();
             rebuildCacheQueue.putQueue(productInfo);
